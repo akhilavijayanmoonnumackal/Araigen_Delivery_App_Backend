@@ -1,10 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const userRouter = require('./routes/userRoutes');
+const adminRouter = require('./routes/adminRoutes');
 const app = express();
 
 app.use(express.json());
 app.use('/api/user', userRouter);
+app.use('/api/admin', adminRouter);
 
 
 // app.get('/', (req,res) => {
