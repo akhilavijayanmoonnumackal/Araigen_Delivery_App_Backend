@@ -1,4 +1,6 @@
+const { json, response } = require('express');
 const Admin = require('../models/adminModel');
+const User = require('../models/UserModel');
 const bcrypt = require('bcryptjs');
 
 const registerAdmin = async( req, res, next) => {
@@ -53,4 +55,79 @@ const adminLogin = async(req, res, next) => {
     return res.status(200).json({ message: "Login Successfull" })
 };
 
-module.exports = { adminLogin, registerAdmin}
+const getUsers = async (req, res, next) => {
+    try {
+        const users = await User.find({});
+        res.status(200).json(users);
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+const addUser = async(req, res, next) => {
+    const { name, email, password, mobileNumber} = req.body;
+    let existingUser;
+    try {
+        existingUser = await User.findOne({ email })
+    } catch (err) {
+        console.log(err);
+    }
+    if(existingUser) {
+        return res.status(400).json({ message: "User already exist! Use Another Email ID..."})
+    }
+    const hashedPassword = bcrypt.hashSync(password);
+
+    const user = new User({
+        name,
+        email,
+        password: hashedPassword,
+        mobileNumber
+    });
+    try {
+        const response = await user.save();
+        console.log(response);
+        return res.status(200).json({user});
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+const getSingleUser = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id);
+        res.status(200).json(user);
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+const updateUser = async (req, res, next) => {
+    try {
+        const {id} = req.params;
+        const user = await User.findByIdAndUpdate(id, req.body);
+        if(!user) {
+            return res.status(404).json({ message: `Cannot find any user with ID ${id}`})
+        }
+        const updatedUser = await User.findById(id);
+        res.status(200).json(updatedUser);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+const deleteUser = async (req, res, next) => {
+    try {
+        const {id} = req.params;
+        const user = await User.findByIdAndDelete(id);
+        if(!user) {
+            return res.status(404).json({ message: `Cannot find any user with ID ${id}`})
+        }
+        res.status(200).json(user);
+    } catch(err) {
+        console.log(err);
+    }
+}
+
+
+
+module.exports = { adminLogin, registerAdmin, getUsers, addUser, getSingleUser, updateUser, deleteUser}
