@@ -1,28 +1,35 @@
 const mongoose = require('mongoose');
 
-const userSchema = mongoose.Schema(
+const userSchema = new mongoose.Schema(
     {
          name: {
             type: String,
-            required: true
+            required: true,
+            trim: true,
          },
-         email: {
+         mobileNumber: {
             type: String,
             required: true,
-            unique: true
+            unique: true,
+            trim: true,
          },
          password: {
             type: String,
             required: true,
             minlength: 6
          },
-         mobileNumber: {
+         address: {
             type: String,
             required: true,
-            unique: true
+         },
+         drivingLicenceDetails: {
+            type: String,
+            required: true,
          }
     }
 );
 
 const TruckDriver = mongoose.model('TruckDriver', userSchema);
 module.exports = TruckDriver;
+
+

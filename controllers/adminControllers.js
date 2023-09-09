@@ -64,70 +64,86 @@ const getUsers = async (req, res, next) => {
     }
 };
 
-const addUser = async(req, res, next) => {
-    const { name, email, password, mobileNumber} = req.body;
-    let existingUser;
-    try {
-        existingUser = await User.findOne({ email })
-    } catch (err) {
-        console.log(err);
+
+const createTruckDriver = async(req, res, next) => {
+    const { name, mobileNumber, password, address, drivingLicenceDetails} = req.body;
+    
+    if(!drivingLicenceDetails) {
+        return res.status(400).json({message: 'Driving licence details are required'});
     }
-    if(existingUser) {
-        return res.status(400).json({ message: "User already exist! Use Another Email ID..."})
+
+    try {
+        const existingTruckDriver = await User.findOne({ mobileNumber });
+    
+    if(existingTruckDriver) {
+        return res.status(400).json({ message: "User already exist! Use Another Mobile Number..."})
     }
     const hashedPassword = bcrypt.hashSync(password);
 
-    const user = new User({
+    const truckDriver = new User({
         name,
-        email,
+        mobileNumber,
         password: hashedPassword,
-        mobileNumber
+        address,
+        drivingLicenceDetails,
     });
-    try {
-        const response = await user.save();
-        console.log(response);
-        return res.status(200).json({user});
+        const savedTruckDriver = await truckDriver.save();
+        console.log(savedTruckDriver);
+
+        return res.status(200).json({message:'Truck driver created successfully', truckDriver: savedTruckDriver});
     } catch (err) {
         console.log(err);
     }
 };
 
-const getSingleUser = async (req, res, next) => {
+const getAllTruckDrivers = async(req, res, next) => {
     try {
-        const user = await User.findById(req.params.id);
-        res.status(200).json(user);
-    } catch (err) {
-        console.log(err);
-    }
-};
-
-const updateUser = async (req, res, next) => {
-    try {
-        const {id} = req.params;
-        const user = await User.findByIdAndUpdate(id, req.body);
-        if(!user) {
-            return res.status(404).json({ message: `Cannot find any user with ID ${id}`})
-        }
-        const updatedUser = await User.findById(id);
-        res.status(200).json(updatedUser);
-    } catch (err) {
-        console.log(err);
-    }
-}
-
-const deleteUser = async (req, res, next) => {
-    try {
-        const {id} = req.params;
-        const user = await User.findByIdAndDelete(id);
-        if(!user) {
-            return res.status(404).json({ message: `Cannot find any user with ID ${id}`})
-        }
-        res.status(200).json(user);
+        const truckDrivers = await User.find();
+        res.json(truckDrivers);
     } catch(err) {
         console.log(err);
     }
-}
+};
+
+const getSingleTruckDriver = async (req, res, next) => {
+    try {
+        const truckDriver = await User.findById(req.params.id);
+        res.status(200).json(truckDriver);
+    } catch(err) {
+        console.log(err);
+    }
+};
+
+
+const updateTruckDriver = async(req, res, next) => {
+    try {
+        const {id} = req.params;
+        const truckDriver = await User.findByIdAndUpdate(id, req.body);
+        if(!truckDriver) {
+            return res.status(404).json({message: `Cannot find any truck driver with this ID ${id}`});
+        }
+        const updatedTruckDriver = await User.findById(id);
+        res.status(200).json(updatedTruckDriver);
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+
+const deleteTruckDriver = async(req, res, next) => {
+    try {
+        const {id} = req.params;
+        const truckDriver = await User.findByIdAndDelete(id);
+        if(!truckDriver) {
+            return tes.status(404).json({ message: `Cannot find any truck driver with ID ${id}`});
+        }
+        res.status(200).json({message: "Truck Driver Deleted Successfully"});
+    } catch (err) {
+        console.log(err);
+    }
+};
 
 
 
-module.exports = { adminLogin, registerAdmin, getUsers, addUser, getSingleUser, updateUser, deleteUser}
+
+module.exports = { adminLogin, registerAdmin, createTruckDriver, getAllTruckDrivers, getSingleTruckDriver, updateTruckDriver, deleteTruckDriver};

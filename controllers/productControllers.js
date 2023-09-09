@@ -18,6 +18,15 @@ const getAllProducts = async (req, res, next) => {
     }
 };
 
+const fetchProducts = async(req, res, next) => {
+    try {
+        const products = await Product.find().populate('category');
+        res.json(products);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 const singleProduct = async (req, res, next) => {
     try {
         const {id} = req.params;
@@ -53,6 +62,6 @@ const deleteProduct = async (req, res, next) => {
     } catch (err) {
         console.log(err);
     }
-}
+};
 
-module.exports ={ addProducts, getAllProducts, singleProduct, updateProduct, deleteProduct };
+module.exports ={ addProducts, getAllProducts, singleProduct, updateProduct, deleteProduct, fetchProducts };

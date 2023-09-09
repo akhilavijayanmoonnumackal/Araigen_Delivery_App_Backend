@@ -1,8 +1,10 @@
 const express = require('express');
+const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const userRouter = require('./routes/userRoutes');
 const adminRouter = require('./routes/adminRoutes');
 const app = express();
+dotenv.config();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false}));
