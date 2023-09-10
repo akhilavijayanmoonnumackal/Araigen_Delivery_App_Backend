@@ -1,4 +1,5 @@
 const User = require('../models/UserModel');
+const Product = require('../models/productModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -48,7 +49,7 @@ const doSignup = async( req, res, next) => {
     } catch (err) {
         console.log(err);
     }
-    return res.status(201).json({ user })
+    return res.status(201).json({message:"Truck Driver Signup Successfully", user })
 };
 
 const doLogin = async(req, res, next) => {
@@ -91,12 +92,16 @@ const doLogin = async(req, res, next) => {
             { expiresIn: "1d"}
         );
         console.log("Received token:", accessToken);
-        return res.status(200).json({ accessToken});
+        return res.status(200).json({message:"Truck Driver LoggedIn Successfully", accessToken});
         
     } catch (err) {
         console.log(err);
     }
-}
+};
+
+
+
+
 
 
 

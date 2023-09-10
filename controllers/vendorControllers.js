@@ -5,7 +5,7 @@ const createVendor = async (req, res, next) => {
         const { name, location, contactInformation, email } = req.body;
         const vendor = new Vendor({ name, location, contactInformation, email});
         const savedVendor = await vendor.save();
-        res.status(200).json(savedVendor);
+        res.status(200).json({message:"Vendor Created Successfully",savedVendor});
     } catch (err) {
         console.log(err);
     }
@@ -40,7 +40,7 @@ const updateVendorById = async(req, res, next) => {
             return res.status(404).json({message: `Vendor not found by this ID ${id}`});
         }
         const updatedVendor = await Vendor.findById(id);
-        res.status(200).json(updatedVendor);
+        res.status(200).json({message:"Updated Vendor Details Successfully",updatedVendor});
     } catch(err) {
         console.log(err);
     }
@@ -53,7 +53,7 @@ const deleteVendorById = async(req, res, next) => {
         if(!deletedVendor) {
             return res.status(404).json({message: `Vendor not found by this Id ${id}`});
         }
-        res.json({message: "Vendor deleted Successfully"});
+        res.status(200).json({message: "Vendor Deleted Successfully"});
     } catch(err) {
         console.log(err);
     }

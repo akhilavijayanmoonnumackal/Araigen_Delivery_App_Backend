@@ -1,7 +1,9 @@
 const { json, response } = require('express');
 const Admin = require('../models/adminModel');
 const User = require('../models/UserModel');
+const Vendor = require('../models/vendorModel');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const registerAdmin = async( req, res, next) => {
     const { email, password } = req.body;
@@ -36,32 +38,61 @@ const registerAdmin = async( req, res, next) => {
 };
 
 
+// const adminLogin = async(req, res, next) => {
+//     const { email, password } = req.body;
+//     let existingAdmin;
+//     try {
+//         existingAdmin = await Admin.findOne({ email });
+//         if (!existingAdmin) {
+//             return res.status(400).json({ message: "admin not found" });
+//         }
+//     } catch (err) {
+//         return console.log(err);
+//     }
+//     const isAdminPasswordCorrect = bcrypt.compareSync(password, existingAdmin.password);
+//     if(!isAdminPasswordCorrect) {
+//         return res.status(400).json({ message: "Incorrect Password" });
+//     }
+//     return res.status(200).json({ message: "Login Successfull" })
+// };
+
 const adminLogin = async(req, res, next) => {
     const { email, password } = req.body;
+    if(!email || !password) {
+        res.status(400);
+        throw new Error('All fields are required');
+    }
     let existingAdmin;
     try {
         existingAdmin = await Admin.findOne({ email });
-        if (!existingAdmin) {
-            return res.status(400).json({ message: "admin not found" });
-        }
     } catch (err) {
         return console.log(err);
     }
-   
+    if (!existingAdmin) {
+        return res.status(400).json({ message: "admin not found" });
+    }
     const isAdminPasswordCorrect = bcrypt.compareSync(password, existingAdmin.password);
     if(!isAdminPasswordCorrect) {
         return res.status(400).json({ message: "Incorrect Password" });
     }
-    return res.status(200).json({ message: "Login Successfull" })
-};
-
-const getUsers = async (req, res, next) => {
     try {
-        const users = await User.find({});
-        res.status(200).json(users);
+        const accessToken = jwt.sign(
+            {
+                existingAdmin: {
+                    isAdmin: existingAdmin.isAdmin,
+                    email: existingAdmin.email,
+                    id: existingAdmin.id,
+                },
+            },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: "1d"},
+        );
+        console.log("Received token:", accessToken);
+        return res.status(200).json({ accessToken});
     } catch (err) {
         console.log(err);
     }
+    return res.status(200).json({ message: "Login Successfull" })
 };
 
 
@@ -123,7 +154,7 @@ const updateTruckDriver = async(req, res, next) => {
             return res.status(404).json({message: `Cannot find any truck driver with this ID ${id}`});
         }
         const updatedTruckDriver = await User.findById(id);
-        res.status(200).json(updatedTruckDriver);
+        res.status(200).json({message:"Truck Driver Details are Updated",updatedTruckDriver});
     } catch (err) {
         console.log(err);
     }
@@ -143,7 +174,16 @@ const deleteTruckDriver = async(req, res, next) => {
     }
 };
 
-
+// const createVendor = async(req, res, next) => {
+//     try {
+//         const { name, location, contactInformation, email } = req.body;
+//         const vendor = new Vendor({ name, location, contactInformation, email });
+//         const savedVendor = await vendor.save();
+//         res.status(200).json(savedVendor);
+//     }  catch (err) {
+//         console.log(err);
+//     }
+// }
 
 
 module.exports = { adminLogin, registerAdmin, createTruckDriver, getAllTruckDrivers, getSingleTruckDriver, updateTruckDriver, deleteTruckDriver};
