@@ -6,11 +6,11 @@ const billSchema = new mongoose.Schema({
         ref:'Order',
         required: true,
     },
-    // billNumber: {
-    //     type: String,
-    //     required: true,
-    // },
-    billAmount: {
+    billNumber: {
+        type: String,
+        required: true,
+    },
+    totalBillAmount: {
         type: Number,
         required: false,
     },

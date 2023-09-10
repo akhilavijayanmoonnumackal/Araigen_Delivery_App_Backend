@@ -1,5 +1,4 @@
 const User = require('../models/UserModel');
-const Product = require('../models/productModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -29,12 +28,6 @@ const doSignup = async( req, res, next) => {
         return res.status(400).json({ message: "User Already Exist! Login Instead.."});
     }
     const hashedPassword = bcrypt.hashSync(password);
-    // const user = new User ({
-    //     name,
-    //     email,
-    //     password: hashedPassword,
-    //     mobileNumber
-    // });
 
     const user = new User ({
         name,
@@ -68,12 +61,6 @@ const doLogin = async(req, res, next) => {
         return res.status(404).json({ message: "User Not Exists in this Email! Signup Instead.."});
     }
 
-    // const isPasswordCorrect = bcrypt.compareSync(password, existingUser.password);
-    // if(!isPasswordCorrect) {
-    //     return res.status(400).json({ message: "Incorrect Password" });
-    // }
-    // return res.status(200).json({ message: "Login Successfull" })
-
     const isPasswordCorrect = bcrypt.compareSync(password, existingUser.password);
     if(!isPasswordCorrect) {
         return res.status(400).json({ message: "Incorrect Password" });
@@ -98,11 +85,5 @@ const doLogin = async(req, res, next) => {
         console.log(err);
     }
 };
-
-
-
-
-
-
 
 module.exports = { getAllUser, doSignup, doLogin }

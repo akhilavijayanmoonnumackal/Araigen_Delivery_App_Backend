@@ -1,10 +1,9 @@
-const { json, response } = require('express');
 const Admin = require('../models/adminModel');
 const User = require('../models/UserModel');
-const Vendor = require('../models/vendorModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+//admin registration
 const registerAdmin = async( req, res, next) => {
     const { email, password } = req.body;
     let existingAdmin;
@@ -37,25 +36,7 @@ const registerAdmin = async( req, res, next) => {
     }
 };
 
-
-// const adminLogin = async(req, res, next) => {
-//     const { email, password } = req.body;
-//     let existingAdmin;
-//     try {
-//         existingAdmin = await Admin.findOne({ email });
-//         if (!existingAdmin) {
-//             return res.status(400).json({ message: "admin not found" });
-//         }
-//     } catch (err) {
-//         return console.log(err);
-//     }
-//     const isAdminPasswordCorrect = bcrypt.compareSync(password, existingAdmin.password);
-//     if(!isAdminPasswordCorrect) {
-//         return res.status(400).json({ message: "Incorrect Password" });
-//     }
-//     return res.status(200).json({ message: "Login Successfull" })
-// };
-
+//admin login
 const adminLogin = async(req, res, next) => {
     const { email, password } = req.body;
     if(!email || !password) {
@@ -95,7 +76,7 @@ const adminLogin = async(req, res, next) => {
     return res.status(200).json({ message: "Login Successfull" })
 };
 
-
+//truck driver management(C)
 const createTruckDriver = async(req, res, next) => {
     const { name, mobileNumber, password, address, drivingLicenceDetails} = req.body;
     
@@ -127,6 +108,7 @@ const createTruckDriver = async(req, res, next) => {
     }
 };
 
+//truck driver management(R)
 const getAllTruckDrivers = async(req, res, next) => {
     try {
         const truckDrivers = await User.find();
@@ -136,6 +118,7 @@ const getAllTruckDrivers = async(req, res, next) => {
     }
 };
 
+//truck driver management(R)
 const getSingleTruckDriver = async (req, res, next) => {
     try {
         const truckDriver = await User.findById(req.params.id);
@@ -145,7 +128,7 @@ const getSingleTruckDriver = async (req, res, next) => {
     }
 };
 
-
+//truck driver management(U)
 const updateTruckDriver = async(req, res, next) => {
     try {
         const {id} = req.params;
@@ -160,7 +143,7 @@ const updateTruckDriver = async(req, res, next) => {
     }
 };
 
-
+//truck driver management(D)
 const deleteTruckDriver = async(req, res, next) => {
     try {
         const {id} = req.params;
@@ -173,17 +156,5 @@ const deleteTruckDriver = async(req, res, next) => {
         console.log(err);
     }
 };
-
-// const createVendor = async(req, res, next) => {
-//     try {
-//         const { name, location, contactInformation, email } = req.body;
-//         const vendor = new Vendor({ name, location, contactInformation, email });
-//         const savedVendor = await vendor.save();
-//         res.status(200).json(savedVendor);
-//     }  catch (err) {
-//         console.log(err);
-//     }
-// }
-
 
 module.exports = { adminLogin, registerAdmin, createTruckDriver, getAllTruckDrivers, getSingleTruckDriver, updateTruckDriver, deleteTruckDriver};

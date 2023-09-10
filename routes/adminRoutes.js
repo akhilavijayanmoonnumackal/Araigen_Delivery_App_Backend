@@ -8,11 +8,11 @@ const { orderValidationRules , validate } = require('../middlewares/validationMi
 
 const router = express.Router();
 
-
+//admin login & register
 router.post('/', registerAdmin);
 router.post('/adminLogin', adminLogin);
 
-
+//product management(CRUD)
 router.post('/addProduct', validateToken, addProducts);
 router.get('/allProducts', validateToken, getAllProducts);
 router.get('/fetchProducts', validateToken, fetchProducts);
@@ -20,18 +20,21 @@ router.get('/singleProduct/:id', validateToken, singleProduct);
 router.put('/updateProduct/:id', validateToken, updateProduct);
 router.delete('/deleteProduct/:id', validateToken, deleteProduct);
 
+//truck driver management(CRUD)
 router.post('/createTruckDriver', validateToken,  createTruckDriver);
 router.get('/getAllTruckDrivers', validateToken, getAllTruckDrivers);
 router.get('/getSingleTruckDriver/:id', validateToken, getSingleTruckDriver);
 router.put('/updateTruckDriver/:id', validateToken, updateTruckDriver);
 router.delete('/deleteTruckDriver/:id', validateToken, deleteTruckDriver);
 
+//vendor management(CRUD)
 router.post('/createVendor', validateToken, createVendor);
 router.get('/getAllVendors', validateToken, getAllVendors);
 router.get('/getVendorById/:id', validateToken, getVendorById);
 router.put('/updateVendorById/:id', validateToken, updateVendorById);
 router.delete('/deleteVendorById/:id', validateToken, deleteVendorById);
 
+//order management(CR)
 router.post('/createOrder', validateToken, orderValidationRules, validate, createOrder);
 router.get('/getAllOrders', validateToken, getAllOrders);
 

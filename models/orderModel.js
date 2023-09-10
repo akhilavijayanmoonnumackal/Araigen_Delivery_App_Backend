@@ -3,16 +3,25 @@ const mongoose = require('mongoose');
 const orderSchema = new mongoose.Schema({
     
     products: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true,
+        },
+        quantity: {
+            type: Number,
+            required: true,
+        },
     }],
     truckDriver: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'TruckDriver',
+        required: true,
     },
     vendorDetails: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Vendor',
+        required: true,
     },
     totalBillAmount: {
         type: Number,
