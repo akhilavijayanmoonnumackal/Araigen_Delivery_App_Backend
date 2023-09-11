@@ -12,6 +12,10 @@ const orderSchema = new mongoose.Schema({
             type: Number,
             required: true,
         },
+        price: {
+            type: Number,
+            required: true,
+        }
     }],
     truckDriver: {
         type: mongoose.Schema.Types.ObjectId,
@@ -31,6 +35,11 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    status: {
+        type: String,
+        enum: ['Pending', 'Completed', 'Cancelled'],
+        default: 'Pending',
+    }
 });
 
 const Order = mongoose.model('Order', orderSchema);

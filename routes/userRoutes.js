@@ -6,7 +6,7 @@ const {  doSignup, doLogin } = require('../controllers/userControllers');
 const { orderValidationRules, validate } = require('../middlewares/validationMiddleware');
 const { getAllVendors } = require('../controllers/vendorControllers');
 const { getAllProducts } = require('../controllers/productControllers');
-const { getAllOrdersForTruckDriver, addToCart, finalizeOrderWithBill, getAllBillsForTruckDriver } = require('../controllers/orderControllers');
+const { getAllOrdersForTruckDriver, addToCart, finalizeOrderWithBill, getAllBillsForTruckDriver, getCartItemsForTruckDriver } = require('../controllers/orderControllers');
 
 //Truck Driver Signup and Login
 router.post('/signup', doSignup);
@@ -24,16 +24,13 @@ router.get('/getAllOrdersForTruckDriver', validateToken, getAllOrdersForTruckDri
 //add to cart based on the order
 router.post('/addToCart/:orderId', validateToken, addToCart);
 
+router.get('/getCartItemsForTruckDriver', validateToken, getCartItemsForTruckDriver);
+
 // Finalize an order with a bill
-router.post('/finalizeOrderWithBill', validateToken, finalizeOrderWithBill);
+router.post('/finalizeOrderWithBill/:cartId/:orderId', validateToken, finalizeOrderWithBill);
 
 // Get all bills
 router.get('/getAllBillsForTruckDriver', validateToken, getAllBillsForTruckDriver);
-
-
-
-
-
     
 
 module.exports = router;
