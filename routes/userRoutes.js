@@ -3,7 +3,6 @@ const router = express.Router();
 
 const { validateToken } = require('../middlewares/validateTokenHandler');
 const {  doSignup, doLogin } = require('../controllers/userControllers');
-const { orderValidationRules, validate } = require('../middlewares/validationMiddleware');
 const { getAllVendors } = require('../controllers/vendorControllers');
 const { fetchProducts } = require('../controllers/productControllers');
 const { getAllOrdersForTruckDriver, addToCart, finalizeOrderWithBill, getAllPreparedBills, getCartItems } = require('../controllers/orderControllers');
@@ -24,6 +23,7 @@ router.get('/getAllOrdersForTruckDriver', validateToken, getAllOrdersForTruckDri
 //add to cart based on the order
 router.post('/addToCart/:orderId', validateToken, addToCart);
 
+//to get cart
 router.get('/getCartItems', validateToken, getCartItems);
 
 // Finalize an order with a bill
@@ -32,6 +32,5 @@ router.post('/finalizeOrderWithBill/:cartId/:orderId', validateToken, finalizeOr
 // Get all bills
 router.get('/getAllPreparedBills', validateToken, getAllPreparedBills);
 
-    
 
 module.exports = router;

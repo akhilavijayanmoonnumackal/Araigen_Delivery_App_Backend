@@ -1,5 +1,7 @@
+const { body, validationResult } = require('express-validator');
 const Admin = require('../models/adminModel');
 const User = require('../models/UserModel');
+const DrivingLicence = require('../models/drivingLicenceModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -73,58 +75,119 @@ const adminLogin = async(req, res, next) => {
     } catch (err) {
         console.log(err);
     }
-    return res.status(200).json({ message: "Login Successfull" })
+    return res.status(200).json({success: true, message: "Login Successfull" })
 };
 
 //truck driver management(C)
-const createTruckDriver = async(req, res, next) => {
-    const { name, mobileNumber, password, address, drivingLicenceDetails} = req.body;
-    
-    if(!drivingLicenceDetails) {
-        return res.status(400).json({message: 'Driving licence details are required'});
-    }
-
+const createTruckDriver = async (req, res, next, isAdmin = false) => {
     try {
-        const existingTruckDriver = await User.findOne({ mobileNumber });
-    
-    if(existingTruckDriver) {
-        return res.status(400).json({ message: "User already exist! Use Another Mobile Number..."})
-    }
-    const hashedPassword = bcrypt.hashSync(password);
 
-    const truckDriver = new User({
-        name,
-        mobileNumber,
-        password: hashedPassword,
-        address,
-        drivingLicenceDetails,
-    });
-        const savedTruckDriver = await truckDriver.save();
+        // Validation for name
+        await body('name')
+            .notEmpty()
+            .withMessage('Name is required')
+            .isLength({ min: 2 })
+            .withMessage('Name must be at least 2 characters long')
+            .run(req);
+
+        // Validation for mobile number
+        await body('mobileNumber')
+            .notEmpty()
+            .isMobilePhone(['en-IN'], { strictMode: false })
+            .run(req);
+
+        // Validation for password
+        await body('password')
+            .notEmpty()
+            .isLength({ min: 6 })
+            .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%#?&])[A-Za-z\d@$!%*#?&]{6,}$/)
+            .withMessage('Password must be at least 6 characters long and contain at least one symbol, one number, and one alphabet character')
+            .run(req);
+
+        // Validation for address
+        await body('address')
+            .notEmpty()
+            .withMessage('Address is required')
+            .run(req);
+
+        // Validation for driving licence 
+        await body('drivingLicenceDetails.number')
+            .notEmpty()
+            .withMessage('Driving License Number is required')
+            .custom(async (value) => {
+                const regex = /^[A-Z]{2}\d{2}\d{4}\d{7}$/;
+                if (!regex.test(value)) {
+                    throw new Error('Invalid Driving Licence Number format');
+                }
+                const existingLicence = await DrivingLicence.findOne({ number: value });
+                if (existingLicence) {
+                    throw new Error('Driving Licence Number already in use');
+                }
+                return true;
+            })
+            .run(req);
+
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { name, mobileNumber, password, address, drivingLicenceDetails } = req.body;
+
+        let existingUser;
+        try {
+            existingUser = await User.findOne({ mobileNumber });
+        } catch (err) {
+            return console.log(err);
+        }
+
+        if (existingUser) {
+            return res.status(400).json({ message: "User Already Exists! Login Instead.." });
+        }
+
+        // Create the driving licence object
+        const drivingLicence = new DrivingLicence(drivingLicenceDetails);
+        await drivingLicence.save();
+
+        const hashedPassword = bcrypt.hashSync(password);
+
+        const user = new User({
+            name,
+            mobileNumber,
+            password: hashedPassword,
+            address,
+            drivingLicenceDetails: drivingLicence,
+        });
+
+        const savedTruckDriver = await user.save();
         console.log(savedTruckDriver);
 
-        return res.status(200).json({message:'Truck driver created successfully', truckDriver: savedTruckDriver});
+        return res.status(200).json({success: true, message:'Truck driver created successfully', truckDriver: savedTruckDriver});
     } catch (err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
 //truck driver management(R)
 const getAllTruckDrivers = async(req, res, next) => {
     try {
-        const truckDrivers = await User.find();
-        res.json(truckDrivers);
+        const truckDrivers = await User.find().populate('drivingLicenceDetails');
+        res.json({ success: true, truckDrivers });
     } catch(err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
 //truck driver management(R)
 const getSingleTruckDriver = async (req, res, next) => {
     try {
-        const truckDriver = await User.findById(req.params.id);
-        res.status(200).json(truckDriver);
+        const truckDriver = await User.findById(req.params.id).populate('drivingLicenceDetails');
+        res.status(200).json({success: true, truckDriver});
     } catch(err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
@@ -136,10 +199,11 @@ const updateTruckDriver = async(req, res, next) => {
         if(!truckDriver) {
             return res.status(404).json({message: `Cannot find any truck driver with this ID ${id}`});
         }
-        const updatedTruckDriver = await User.findById(id);
-        res.status(200).json({message:"Truck Driver Details are Updated",updatedTruckDriver});
+        const updatedTruckDriver = await User.findById(id).populate('drivingLicenceDetails');
+        res.status(200).json({success: true, message:"Truck Driver Details are Updated",updatedTruckDriver});
     } catch (err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
@@ -151,9 +215,10 @@ const deleteTruckDriver = async(req, res, next) => {
         if(!truckDriver) {
             return tes.status(404).json({ message: `Cannot find any truck driver with ID ${id}`});
         }
-        res.status(200).json({message: "Truck Driver Deleted Successfully"});
+        res.status(200).json({success: true, message: "Truck Driver Deleted Successfully"});
     } catch (err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 

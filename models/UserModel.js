@@ -23,7 +23,8 @@ const userSchema = new mongoose.Schema(
             required: true,
          },
          drivingLicenceDetails: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'DrivingLicence', 
             required: true,
          }
     }

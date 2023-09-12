@@ -1,11 +1,11 @@
 const express = require('express');
 const { validateTokenAdmin } = require('../middlewares/validateTokenHandler');
+const { orderValidationRules , validate } = require('../middlewares/validationMiddleware');
 const { adminLogin, registerAdmin, createTruckDriver, getAllTruckDrivers, getSingleTruckDriver, updateTruckDriver, deleteTruckDriver } = require('../controllers/adminControllers');
 const { createCategory, getAllCategories, getSingleCategoryById, updateCategory, deleteCategory } = require('../controllers/categoryController');
 const { addProducts, fetchProducts, singleProduct, updateProduct, deleteProduct } = require('../controllers/productControllers');
 const { createVendor, getAllVendors, getVendorById, updateVendorById, deleteVendorById } = require('../controllers/vendorControllers');
 const { createOrder, getAllOrders } = require('../controllers/orderControllers'); 
-const { orderValidationRules , validate } = require('../middlewares/validationMiddleware');
 
 const router = express.Router();
 

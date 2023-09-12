@@ -1,22 +1,11 @@
 const { body, validationResult } = require('express-validator');
 const User = require('../models/UserModel');
+const DrivingLicence = require('../models/drivingLicenceModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { json } = require('express');
 
-const getAllUser = async( req, res, next) => {
-    let users;
-    try {
-        users = await User.find();
-    } catch(err) {
-        console.log(err);
-    }
-    if(!users) {
-        return res.status(404).json({ message: "No Users Found"});
-    }
-    return res.status(200).json({ users });
-};
-
+//truck driver signup
 const doSignup = async( req, res, next) => {
     try {
 
@@ -48,9 +37,20 @@ const doSignup = async( req, res, next) => {
         .run(req);
 
         //validation for driving licence
-        await body('drivingLicenceDetails')
+        await body('drivingLicenceDetails.number')
         .notEmpty()
-        .withMessage('DrivingLicence Number is required')
+        .withMessage('Driving License Number is required')
+        .custom(async (value) => {
+            const regex = /^[A-Z]{2}\d{2}\d{4}\d{7}$/;
+                if (!regex.test(value)) {
+                    throw new Error('Invalid Driving Licence Number format');
+                }
+            const existingLicence = await DrivingLicence.findOne({ number: value });
+            if (existingLicence) {
+                throw new Error('Driving Licence Number already in use');
+            }
+            return true;
+        })
         .run(req);
 
         const errors = validationResult(req);
@@ -69,6 +69,15 @@ const doSignup = async( req, res, next) => {
     if(existingUser) {
         return res.status(400).json({ message: "User Already Exist! Login Instead.."});
     }
+    let drivingLicence = await DrivingLicence.findOne({ number: drivingLicenceDetails.number});
+    try {
+        if(!drivingLicence) {
+            drivingLicence = new DrivingLicence(drivingLicenceDetails);
+            await drivingLicence.save();
+            } 
+        }catch (err) {
+            console.log(err);
+    }
     const hashedPassword = bcrypt.hashSync(password);
 
     const user = new User ({
@@ -76,12 +85,13 @@ const doSignup = async( req, res, next) => {
         mobileNumber,
         password: hashedPassword,
         address,
-        drivingLicenceDetails,
+        drivingLicenceDetails: drivingLicence._id,
     });   
         await user.save();
-        return res.status(201).json({message:"Truck Driver Signup Successfully", user })
+        return res.status(201).json({ success: true, message:"Truck Driver Signup Successfully", user })
     } catch (err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }  
 };
 
@@ -118,11 +128,12 @@ const doLogin = async(req, res, next) => {
             { expiresIn: "1d"}
         );
         console.log("Received token:", accessToken);
-        return res.status(200).json({message: `Truck Driver ${existingUser.name} LoggedIn Successfully`, accessToken});
+        return res.status(200).json({ success: true, message: `Truck Driver ${existingUser.name} LoggedIn Successfully`, accessToken});
         
     } catch (err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
-module.exports = { getAllUser, doSignup, doLogin }
+module.exports = { doSignup, doLogin }

@@ -5,6 +5,7 @@ const Product = require('../models/productModel');
 const Bill = require('../models/billModel');
 const { validationResult } = require('express-validator'); 
 const { generateBillNumber } = require('../utils/billUtils');
+const Category = require('../models/cateogoryModel');
 
 //order management(C)
 const createOrder = async(req, res, next) => {
@@ -15,9 +16,10 @@ const createOrder = async(req, res, next) => {
         }
         const order = new Order({ products, truckDriver, vendorDetails, totalBillAmount, collectedAmount });
         const savedOrder = await order.save();
-        res.status(200).json({message: "Order Created", savedOrder});
+        res.status(200).json({ success: true, message: "Order Created", savedOrder});
     } catch (err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
@@ -27,16 +29,22 @@ const getAllOrders = async(req, res, next) => {
         const orders = await Order.find().populate({
             path: 'products.product',
             model: 'Product',
+            populate: {
+                path: 'categoryname',
+                model: 'Category'
+            }
         })
         .populate('truckDriver')
         .populate('vendorDetails');
-        res.status(200).json(orders);
+        res.status(200).json({ success: true, orders});
+        
     } catch(err) {
         console.log(err);
+        res.status(500).json({ success: false ,message: 'Internal server error' });
     }
 };
 
-//truck driver all orders
+//truck driver's all orders
 const getAllOrdersForTruckDriver = async(req, res, next) => {
     try {
         const userId = req.user.id;
@@ -46,6 +54,10 @@ const getAllOrdersForTruckDriver = async(req, res, next) => {
         .populate({
             path: 'products.product',
             model: 'Product',
+            populate: {
+                path: 'categoryname',
+                model: 'Category'
+            }
         })
         .populate('vendorDetails');
 
@@ -53,50 +65,14 @@ const getAllOrdersForTruckDriver = async(req, res, next) => {
             return res.status(404).json({ message: 'No orders found for this Truck Driver.'});
         }
         console.log("Orders: ", orders);
-        res.status(200).json({message: `${userName}'s Orders: `,orders});
+        res.status(200).json({ success: true, message: `${userName}'s Orders: `,orders});
     } catch(err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
-//add to cart based on order
-// const addToCart = async (req, res, next) => {
-//     try {
-//         const { orderId } = req.params;
-//         const { items} = req.body;
-//         const user = req.user;
-        
-//         let order = await Order.findById(orderId);
-
-//         if(!order || order.truckDriver.toString() !== user.id.toString()) {
-//             return res.status(401).json({ message: 'Unauthorized. This is not your order!!!'});
-//         }
-
-//         let cart = await Cart.findOne({ user: user.id, order: orderId });
-//         if (!cart) {
-//             cart = new Cart({ user: user.id, order: orderId, items: [] });
-//         }
-//         for(const item of items) {
-//             const { productId, quantity } = item;
-
-//             const product = await Product.findById(productId);
-//             if(!product) {
-//                 return res.status(404).json({message: 'Product not found'});
-//             }
-//             cart.items.push({ 
-//                 product: productId, 
-//                 quantity,
-//                 price: product.price,
-//             });
-//         }
-//             await cart.save();
-//             console.log('Cart Items:', cart.items);
-//             res.status(200).json({ message: 'Product added to the cart', cart });
-//     } catch (err) {
-//         console.log(err);
-//     }
-// };
-
+//add to cart
 const addToCart = async (req, res, next) => {
     try {
         const { orderId } = req.params;
@@ -134,52 +110,36 @@ const addToCart = async (req, res, next) => {
         }
             await cart.save();
             console.log('Cart Items:', cart.items);
-            res.status(200).json({ message: 'Product added to the cart', cart });
+            res.status(200).json({ success: true, message: 'Product added to the cart', cart });
     } catch (err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
+//to get cart items
 const getCartItems = async (req, res, next) => {
     try {
-        // Retrieve the authenticated user's ID from req.user if needed
-        const userId = req.user.id; // Replace with your authentication logic
+        
+        const userId = req.user.id;
+        const cartItems = await Cart.find({ user: userId })
+        .populate({
+            path: 'items.product',
+            model: Product,
+            populate: {
+                path: 'categoryname',
+                model: Category,
+            }
+        });
 
-        // Query the Cart model to retrieve cart items for the user
-        const cartItems = await Cart.find({ user: userId }).populate('items.product');
-
-        // Send the cart items as a response
-        res.status(200).json(cartItems);
+        res.status(200).json({ success: true, cartItems});
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
-// const getCartItemsForTruckDriver = async(req, res, next) => {
-//     try {
-//         const user = req.user;
-//         if(!user) {
-//             return res.status(401).json({ message: 'User is not authorized'});
-//         }
-//         const cart = await Cart.findOne({ user : user.id});
-
-//         if(!cart) {
-//             return res.status(404).json({message: 'Cart not found'});
-//         }
-//         const cartItems = cart.items;
-//         const cartId = cart._id;
-
-//         console.log('User ID: ', user.id);
-//         console.log("CartIDDDD: ", cartId);
-//         console.log('Cart Items:', cartItems);
-
-//         res.status(200).json({message: ' Cart items retrieved successfully', cartId, cartItems});
-//     } catch(err) {
-//         console.log(err);
-//     }
-// };
-
+//bill preparation
 const finalizeOrderWithBill = async(req, res, next) => {
     try {
         const userId = req.user.id;
@@ -218,78 +178,23 @@ const finalizeOrderWithBill = async(req, res, next) => {
         cart.items = [];
         await cart.save();
 
-        res.status(200).json({message: "Bill finalized successfully", bill: bill, updatedOrder: updatedOrder});
+        res.status(200).json({ success: true, message: "Bill finalized successfully", bill: bill, updatedOrder: updatedOrder});
     } catch (err) {
         console.log(err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
-
+//to get all bills
 const getAllPreparedBills = async (req, res, next) => {
     try {
-        // Query the Bill model to retrieve all bills
         const bills = await Bill.find();
-
-        // Send the bills as a response
-        res.status(200).json(bills);
+        res.status(200).json({ success: true, bills});
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
-
-
-
-// to get All Bills For TruckDriver
-// const getAllBillsForTruckDriver = async(req, res, next) => {
-//     try {
-//         const truckDriverId = req.user.id;
-//         console.log("truck driver Id: ",truckDriverId);
-//         const bills = await Bill.find({ truckDriver: truckDriverId});
-
-//         if(bills.length === 0) {
-//             return res.status(404).json({ message: 'No bills found for this Truck Driver'});
-//         }
-//         res.status(200).json(bills);
-//     } catch(err) {
-//         console.log(err);
-//     }
-// };
-
-// const getAllBillsForTruckDriver = async(req, res, next) => {
-//     try {
-//         const truckDriverId = req.user.id;
-//         console.log("truck driver Iddd: ",truckDriverId);
-//         if(!truckDriverId) {
-//             return res.status(400).json({message: 'Invalid truck driver ID'});
-//         }
-//         const bills = await Bill.find({ truckDriver: truckDriverId});
-
-//         console.log('Bills', bills);
-//         if(!bills || bills.length === 0) {
-//             return res.status(404).json({ message: 'No bills found for this Truck Driver'});
-//         }
-//         res.status(200).json(bills);
-//     } catch(err) {
-//         console.log(err);
-//     }
-// };
-// const orderUpdation = async(req, res, next) => {
-//     const orderId = req.params.orderId;
-//     try {
-//         const order = await Order.findByIdAndUpdate(
-//             orderId,
-//             { status: 'Completed'},
-//             { new: true }
-//         );
-//          if(!order) {
-//             return res.status(404).json({ message: 'Order not Found'});
-//          }
-//          res.status(200).json({ message: 'Order marked as Completed', order});
-//     } catch (err) {
-//         console.log(err);
-//     }
-// }
 
 module.exports = { createOrder, getAllOrders, addToCart, finalizeOrderWithBill, getAllOrdersForTruckDriver, getCartItems, getAllPreparedBills   };
 
