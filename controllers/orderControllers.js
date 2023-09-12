@@ -19,7 +19,7 @@ const createOrder = async(req, res, next) => {
     } catch (err) {
         console.log(err);
     }
-}
+};
 
 //order management(R)
 const getAllOrders = async(req, res, next) => {
@@ -34,7 +34,7 @@ const getAllOrders = async(req, res, next) => {
     } catch(err) {
         console.log(err);
     }
-}
+};
 
 //truck driver all orders
 const getAllOrdersForTruckDriver = async(req, res, next) => {
@@ -92,13 +92,6 @@ const addToCart = async (req, res, next) => {
             await cart.save();
             console.log('Cart Items:', cart.items);
             res.status(200).json({ message: 'Product added to the cart', cart });
-        
-
-        // if (!cart) {
-        //     cart = new Cart({ user: user.id, order: orderId, items: [] });
-        // }
-
-        
     } catch (err) {
         console.log(err);
     }
@@ -121,47 +114,7 @@ const getCartItemsForTruckDriver = async(req, res, next) => {
     } catch(err) {
         console.log(err);
     }
-}
-
-//finalize Order With Bill
-// const finalizeOrderWithBill = async(req, res, next) => {
-//     try {
-//         const user = req.user;
-//         if(!user) {
-//             return res.status(401).json({message: "User is not authorized"});
-//         }
-//         // const { order, billNumber} = req.body;
-//         const cart = await Cart.findOne({ user: user.id});
-
-//         if(!cart || !cart.items.length) {
-//             return res.status(400).json({message: "Cart is Empty"});
-//         }
-//         let totalBillAmount =0;
-//         for(const item of cart.items) {
-//             const product = await Product.findById(item.product);
-//             if(!product) {
-//                 return res.status(404).json({ message: "Product not found"});
-//             }
-//             totalBillAmount += product.price * item.quantity;
-//         }
-//         const billNumber = generateBillNumber();
-//         console.log(billNumber);
-//         const bill = new Bill({
-//             order: cart.order,
-//             billNumber: billNumber,
-//             totalBillAmount,
-//         });
-//         await bill.save();
-
-//         cart.items = [];
-//         await cart.save();
-
-//         // const updatedOrder = await Order.findByIdAndUpdate(order, { status: 'Completed'}, { new: true});
-//         res.status(200).json({message: "Bill finalized successfully", bill});
-//     } catch (err) {
-//         console.log(err);
-//     }
-// };
+};
 
 const finalizeOrderWithBill = async(req, res, next) => {
     try {
@@ -172,18 +125,11 @@ const finalizeOrderWithBill = async(req, res, next) => {
         console.log('Received order id:' , orderId);
         const cart = await Cart.findById(cartId);
         console.log('Cart', cart);
-        // if(!user) {
-        //     return res.status(401).json({message: "User is not authorized"});
-        // }
-        // // const { order, billNumber} = req.body;
-        // const cart = await Cart.findOne({ user: user.id});
 
         if (!cart) {
             return res.status(404).json({ message: "Cart not found" });
         }
-        // if(!cart || !cart.items.length) {
-        //     return res.status(400).json({message: "Cart is Empty"});
-        // }
+
         if(!cart.items || cart.items.length === 0) {
             return res.status(400).json({message: "Cart is Empty"});
         }
@@ -227,7 +173,23 @@ const getAllBillsForTruckDriver = async(req, res, next) => {
     } catch(err) {
         console.log(err);
     }
-}
+};
+// const orderUpdation = async(req, res, next) => {
+//     const orderId = req.params.orderId;
+//     try {
+//         const order = await Order.findByIdAndUpdate(
+//             orderId,
+//             { status: 'Completed'},
+//             { new: true }
+//         );
+//          if(!order) {
+//             return res.status(404).json({ message: 'Order not Found'});
+//          }
+//          res.status(200).json({ message: 'Order marked as Completed', order});
+//     } catch (err) {
+//         console.log(err);
+//     }
+// }
 
 module.exports = { createOrder, getAllOrders, addToCart, finalizeOrderWithBill, getAllOrdersForTruckDriver, getAllBillsForTruckDriver, getCartItemsForTruckDriver };
 

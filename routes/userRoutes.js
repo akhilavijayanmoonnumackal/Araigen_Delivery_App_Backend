@@ -5,7 +5,7 @@ const { validateToken } = require('../middlewares/validateTokenHandler');
 const {  doSignup, doLogin } = require('../controllers/userControllers');
 const { orderValidationRules, validate } = require('../middlewares/validationMiddleware');
 const { getAllVendors } = require('../controllers/vendorControllers');
-const { getAllProducts } = require('../controllers/productControllers');
+const { fetchProducts } = require('../controllers/productControllers');
 const { getAllOrdersForTruckDriver, addToCart, finalizeOrderWithBill, getAllBillsForTruckDriver, getCartItemsForTruckDriver } = require('../controllers/orderControllers');
 
 //Truck Driver Signup and Login
@@ -16,7 +16,7 @@ router.post('/login', doLogin);
 router.get('/vendors', validateToken,  getAllVendors);
 
 //all the product list
-router.get('/getAllProducts', validateToken, getAllProducts);
+router.get('/fetchProducts', validateToken, fetchProducts);
 
 //to get all orders
 router.get('/getAllOrdersForTruckDriver', validateToken, getAllOrdersForTruckDriver);
@@ -31,6 +31,7 @@ router.post('/finalizeOrderWithBill/:cartId/:orderId', validateToken, finalizeOr
 
 // Get all bills
 router.get('/getAllBillsForTruckDriver', validateToken, getAllBillsForTruckDriver);
+
     
 
 module.exports = router;

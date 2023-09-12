@@ -2,7 +2,7 @@ const express = require('express');
 const { validateTokenAdmin } = require('../middlewares/validateTokenHandler');
 const { adminLogin, registerAdmin, createTruckDriver, getAllTruckDrivers, getSingleTruckDriver, updateTruckDriver, deleteTruckDriver } = require('../controllers/adminControllers');
 const { createCategory, getAllCategories, getSingleCategoryById, updateCategory, deleteCategory } = require('../controllers/categoryController');
-const { addProducts, getAllProducts, fetchProducts, singleProduct, updateProduct, deleteProduct } = require('../controllers/productControllers');
+const { addProducts, fetchProducts, singleProduct, updateProduct, deleteProduct } = require('../controllers/productControllers');
 const { createVendor, getAllVendors, getVendorById, updateVendorById, deleteVendorById } = require('../controllers/vendorControllers');
 const { createOrder, getAllOrders } = require('../controllers/orderControllers'); 
 const { orderValidationRules , validate } = require('../middlewares/validationMiddleware');
@@ -22,7 +22,6 @@ router.delete('/deleteCategory/:id', validateTokenAdmin, deleteCategory);
 
 //product management(CRUD)
 router.post('/addProduct', validateTokenAdmin, addProducts);
-router.get('/allProducts', validateTokenAdmin, getAllProducts);
 router.get('/fetchProducts', validateTokenAdmin, fetchProducts);
 router.get('/singleProduct/:id', validateTokenAdmin, singleProduct);
 router.put('/updateProduct/:id', validateTokenAdmin, updateProduct);

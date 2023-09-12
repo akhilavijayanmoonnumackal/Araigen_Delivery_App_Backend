@@ -17,36 +17,6 @@ const getAllUser = async( req, res, next) => {
     return res.status(200).json({ users });
 };
 
-// const doSignup = async( req, res, next) => {
-//     const { name, mobileNumber, password, address, drivingLicenceDetails} = req.body;
-
-//     let existingUser;
-//     try {
-//         existingUser = await User.findOne({ mobileNumber })
-//     } catch(err) {
-//         return console.log(err);
-//     }
-//     if(existingUser) {
-//         return res.status(400).json({ message: "User Already Exist! Login Instead.."});
-//     }
-//     const hashedPassword = bcrypt.hashSync(password);
-
-//     const user = new User ({
-//         name,
-//         mobileNumber,
-//         password: hashedPassword,
-//         address,
-//         drivingLicenceDetails,
-//     });
-
-//     try {
-//         await user.save();
-//     } catch (err) {
-//         console.log(err);
-//     }
-//     return res.status(201).json({message:"Truck Driver Signup Successfully", user })
-// };
-
 const doSignup = async( req, res, next) => {
     try {
 
