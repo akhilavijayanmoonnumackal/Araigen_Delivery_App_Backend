@@ -1,9 +1,35 @@
 const Product = require('../models/productModel');
+const Category = require('../models/cateogoryModel');
+
+// const addProducts = async (req, res, next) => {
+//     try {
+//         const product = await Product.create(req.body)
+//         res.status(200).json({message: "Product Added Successfully", product});
+//     } catch (err) {
+//         console.log(err);
+//     }
+// };
 
 const addProducts = async (req, res, next) => {
     try {
-        const product = await Product.create(req.body)
-        res.status(200).json({message: "Product Added Successfully", product});
+        const { producttitle, stock, categoryname, price, image } = req.body;
+        const category = await Category.findById(categoryname);
+        if(!category) {
+            return res.status(400).json({message: 'Category not found'});
+        }
+        // const product = await Product.create(req.body)
+        // res.status(200).json({message: "Product Added Successfully", product});
+
+        const product = new Product({
+            producttitle,
+            stock,
+            categoryname: category._id,
+            price,
+            image,
+        });
+
+        await product.save();
+        res.status(200).json({ message: 'Product added successfully', product});
     } catch (err) {
         console.log(err);
     }
@@ -20,8 +46,8 @@ const getAllProducts = async (req, res, next) => {
 
 const fetchProducts = async(req, res, next) => {
     try {
-        const products = await Product.find().populate('category');
-        res.json(products);
+        const products = await Product.find().populate('categoryname');
+        res.status(200).json(products);
     } catch (err) {
         console.log(err);
     }
