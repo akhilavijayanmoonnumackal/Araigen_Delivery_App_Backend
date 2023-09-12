@@ -199,7 +199,6 @@ const finalizeOrderWithBill = async(req, res, next) => {
                 order: orderId,
                 billNumber: billNumber,
                 totalBillAmount: totalBillAmount,
-
         
         });
         await bill.save();

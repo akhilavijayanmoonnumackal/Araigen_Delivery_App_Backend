@@ -1,6 +1,7 @@
 const express = require('express');
-const { validateToken } = require('../middlewares/validateTokenHandler');
+const { validateTokenAdmin } = require('../middlewares/validateTokenHandler');
 const { adminLogin, registerAdmin, createTruckDriver, getAllTruckDrivers, getSingleTruckDriver, updateTruckDriver, deleteTruckDriver } = require('../controllers/adminControllers');
+const { createCategory, getAllCategories, getSingleCategoryById, updateCategory, deleteCategory } = require('../controllers/categoryController');
 const { addProducts, getAllProducts, fetchProducts, singleProduct, updateProduct, deleteProduct } = require('../controllers/productControllers');
 const { createVendor, getAllVendors, getVendorById, updateVendorById, deleteVendorById } = require('../controllers/vendorControllers');
 const { createOrder, getAllOrders } = require('../controllers/orderControllers'); 
@@ -12,30 +13,37 @@ const router = express.Router();
 router.post('/', registerAdmin);
 router.post('/adminLogin', adminLogin);
 
+//category management(CRUD)
+router.post('/createCategory', validateTokenAdmin, createCategory);
+router.get('/getAllCategories', validateTokenAdmin, getAllCategories);
+router.get('/getSingleCategoryById/:id', validateTokenAdmin, getSingleCategoryById);
+router.put('/updateCategory/:id', validateTokenAdmin, updateCategory);
+router.delete('/deleteCategory/:id', validateTokenAdmin, deleteCategory);
+
 //product management(CRUD)
-router.post('/addProduct', validateToken, addProducts);
-router.get('/allProducts', validateToken, getAllProducts);
-router.get('/fetchProducts', validateToken, fetchProducts);
-router.get('/singleProduct/:id', validateToken, singleProduct);
-router.put('/updateProduct/:id', validateToken, updateProduct);
-router.delete('/deleteProduct/:id', validateToken, deleteProduct);
+router.post('/addProduct', validateTokenAdmin, addProducts);
+router.get('/allProducts', validateTokenAdmin, getAllProducts);
+router.get('/fetchProducts', validateTokenAdmin, fetchProducts);
+router.get('/singleProduct/:id', validateTokenAdmin, singleProduct);
+router.put('/updateProduct/:id', validateTokenAdmin, updateProduct);
+router.delete('/deleteProduct/:id', validateTokenAdmin, deleteProduct);
 
 //truck driver management(CRUD)
-router.post('/createTruckDriver', validateToken,  createTruckDriver);
-router.get('/getAllTruckDrivers', validateToken, getAllTruckDrivers);
-router.get('/getSingleTruckDriver/:id', validateToken, getSingleTruckDriver);
-router.put('/updateTruckDriver/:id', validateToken, updateTruckDriver);
-router.delete('/deleteTruckDriver/:id', validateToken, deleteTruckDriver);
+router.post('/createTruckDriver', validateTokenAdmin,  createTruckDriver);
+router.get('/getAllTruckDrivers', validateTokenAdmin, getAllTruckDrivers);
+router.get('/getSingleTruckDriver/:id', validateTokenAdmin, getSingleTruckDriver);
+router.put('/updateTruckDriver/:id', validateTokenAdmin, updateTruckDriver);
+router.delete('/deleteTruckDriver/:id', validateTokenAdmin, deleteTruckDriver);
 
 //vendor management(CRUD)
-router.post('/createVendor', validateToken, createVendor);
-router.get('/getAllVendors', validateToken, getAllVendors);
-router.get('/getVendorById/:id', validateToken, getVendorById);
-router.put('/updateVendorById/:id', validateToken, updateVendorById);
-router.delete('/deleteVendorById/:id', validateToken, deleteVendorById);
+router.post('/createVendor', validateTokenAdmin, createVendor);
+router.get('/getAllVendors', validateTokenAdmin, getAllVendors);
+router.get('/getVendorById/:id', validateTokenAdmin, getVendorById);
+router.put('/updateVendorById/:id', validateTokenAdmin, updateVendorById);
+router.delete('/deleteVendorById/:id', validateTokenAdmin, deleteVendorById);
 
 //order management(CR)
-router.post('/createOrder', validateToken, orderValidationRules, validate, createOrder);
-router.get('/getAllOrders', validateToken, getAllOrders);
+router.post('/createOrder', validateTokenAdmin, orderValidationRules, validate, createOrder);
+router.get('/getAllOrders', validateTokenAdmin, getAllOrders);
 
 module.exports = router;
